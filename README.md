@@ -1,4 +1,4 @@
-# EasyLogin: 高级 Vue 3 & Express 登录系统
+# EasyLogin: 一个基于JWT，无感刷新token机制的登录认证系统
 ## 项目截图
 
 以下是 EasyLogin 系统的一些主要界面截图：
