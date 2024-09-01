@@ -1,0 +1,59 @@
+# Docker Compose 配置文件
+# 定义了前端、后端和数据库服务的容器化部署
+
+services:
+  # 前端服务配置
+  frontend:
+    build: 
+      context: ./frontend  # 前端 Dockerfile 所在的目录
+      args:
+        - VITE_API_BASE_URL=/api  # 传递给 Dockerfile 的构建参数，设置 API 基础 URL
+    ports:
+      - "8080:80"  # 将容器的 80 端口映射到主机的 8080 端口
+    depends_on:
+      - backend  # 确保后端服务先启动
+    networks:
+      - app-network  # 连接到自定义网络
+
+  # 后端服务配置
+  backend:
+    build: ./backend  # 后端 Dockerfile 所在的目录
+    ports:
+      - "${PORT}:${PORT}"  # 动态端口映射，使用环境变量
+    depends_on:
+      - database  # 确保数据库服务先启动
+    environment:  # 设置环境变量
+      - NODE_ENV=production
+      - DB_HOST=database
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - PORT=${PORT}
+      - FRONTEND_URL=http://localhost:8080
+    networks:
+      - app-network
+
+  # 数据库服务配置
+  database:
+    image: mysql:8.4.2  # 使用 MySQL 8.4.2 镜像
+    environment:  # 设置 MySQL 环境变量
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql  # 持久化数据存储
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # 挂载初始化 SQL 脚本
+    networks:
+      - app-network
+
+# 定义自定义网络
+networks:
+  app-network:
+    driver: bridge
+
+# 定义持久化卷
+volumes:
+  db-data:  # 用于存储数据库数据

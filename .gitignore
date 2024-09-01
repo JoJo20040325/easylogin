@@ -1,0 +1,26 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Vue/Vite
+dist/
+.cache/
+
+# 环境文件
+.env
+.env.local
+.env.*.local
+
+# 编辑器文件
+.vscode/
+.idea/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+
+# 数据库文件
+*.sqlite
