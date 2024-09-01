@@ -1,0 +1,49 @@
+#这是直接利用docker的镜像的compose文件
+services:
+  frontend:
+    image: vue20040325/easylogin-frontend:v1.0
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    image: vue20040325/easylogin-backend:v1.0
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    depends_on:
+      - database
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=database
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - PORT=${PORT:-3000}
+      - FRONTEND_URL=http://localhost:8080
+    networks:
+      - app-network
+
+  database:
+    image: mysql:8.4.2
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-data:
