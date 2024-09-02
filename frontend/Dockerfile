@@ -2,7 +2,7 @@
 # 使用多阶段构建来优化最终镜像大小
 
 # 构建阶段
-FROM node:20.16.0 AS build-stage
+FROM node:20.16.0-alpine AS build-stage
 WORKDIR /app
 # 复制 package.json 和 package-lock.json（如果存在）
 COPY package*.json ./
