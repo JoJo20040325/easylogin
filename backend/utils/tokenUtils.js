@@ -95,8 +95,10 @@ class TokenUtils {
     if (!storedToken || new Date() > storedToken.expires_at) {
       throw new AppError('无效的刷新令牌', 403);
     }
-    await RefreshToken.deleteByToken(refreshToken);
-    return this.generateTokenPair(storedToken.user_id);
+    
+    const accessToken = this.generateAccessToken(storedToken.user_id);
+    
+    return { accessToken, refreshToken };
   }
 }
 

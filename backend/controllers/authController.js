@@ -43,8 +43,8 @@ exports.login = asyncHandler(async (req, res) => {
  * @param {Object} res - Express 响应对象
  */
 exports.refresh = asyncHandler(async (req, res) => {
-  const newTokens = await authService.refresh(req.body.refreshToken);
-  res.json(newTokens);
+  const { accessToken, refreshToken } = await authService.refresh(req.body.refreshToken);
+  res.json({ accessToken, refreshToken });
 });
 
 /**

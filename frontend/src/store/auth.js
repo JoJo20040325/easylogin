@@ -71,7 +71,8 @@ export const useAuthStore = defineStore("auth", {
         const { data } = await api.post("/auth/refresh", {
           refreshToken: this.refreshToken,
         });
-        this.setTokens(data.accessToken, data.refreshToken);
+        this.accessToken = data.accessToken;
+        // 注意：不要更新 refreshToken
         this.lastRefresh = new Date().toISOString();
       } catch (error) {
         this.logout();
