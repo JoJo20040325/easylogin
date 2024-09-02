@@ -23,7 +23,6 @@ services:
     depends_on:
       - database  # 确保数据库服务先启动
     environment:  # 设置环境变量
-      - NODE_ENV=production
       - DB_HOST=database
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
