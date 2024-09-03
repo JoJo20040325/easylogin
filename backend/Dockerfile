@@ -4,11 +4,13 @@ FROM node:20.16.0
 # 设置工作目录
 WORKDIR /usr/src/app
 
+# 设置 npm 和 pnpm 使用淘宝镜像
+RUN npm config set registry https://registry.npmmirror.com
+RUN npm install -g pnpm
+RUN pnpm config set registry https://registry.npmmirror.com
+
 # 复制 package.json 和 pnpm-lock.yaml（如果存在）
 COPY package.json pnpm-lock.yaml* ./
-
-# 安装 pnpm
-RUN npm install -g pnpm
 
 # 安装项目依赖
 RUN pnpm install --frozen-lockfile
