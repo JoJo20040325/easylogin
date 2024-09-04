@@ -8,16 +8,6 @@ const asyncHandler = require('../utils/asyncHandler');
 const TokenUtils = require('../utils/tokenUtils');
 
 /**
- * 获取令牌有效期设置
- * @param {Object} req - Express 请求对象
- * @param {Object} res - Express 响应对象
- */
-exports.getTokenTimes = (req, res) => {
-  const times = TokenUtils.getTokenExpiryTimes();
-  res.json(times);
-};
-
-/**
  * 用户注册
  * @param {Object} req - Express 请求对象
  * @param {Object} res - Express 响应对象

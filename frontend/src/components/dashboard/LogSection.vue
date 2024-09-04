@@ -2,7 +2,7 @@
   <div
     class="bg-white bg-opacity-10 rounded-xl overflow-hidden backdrop-blur-md transition-all duration-300 hover:bg-opacity-20">
     <div class="flex items-center justify-between px-4 py-5 sm:px-6">
-      <h3 class="text-lg font-medium leading-6 text-white">{{ title }}</h3>
+      <h3 class="text-lg font-medium leading-6 text-black">{{ title }}</h3>
       <button @click="$emit('clear')" class="text-sm text-red-400 hover:text-red-300 transition-colors duration-200">
         清除日志
       </button>
@@ -11,15 +11,15 @@
       <ul class="divide-y divide-gray-700">
         <TransitionGroup name="list" tag="div">
           <li v-for="log in logs" :key="log.id"
-            class="flex items-center space-x-4 px-4 py-4 transition-all duration-300 hover:bg-white hover:bg-opacity-5">
+            class="flex items-center space-x-4 px-4 py-4 transition-all duration-300 hover:bg-black hover:bg-opacity-5">
             <span class="flex-shrink-0">
               <Icon :name="log.success ? 'check-circle' : 'alert-circle'"
                 :class="log.success ? 'text-green-400' : 'text-red-400'" size="20" />
             </span>
-            <span class="flex-grow text-sm text-gray-300">{{
+            <span class="flex-grow text-sm text-black">{{
               log.message
               }}</span>
-            <span class="flex-shrink-0 text-sm text-gray-400">{{
+            <span class="flex-shrink-0 text-sm text-black">{{
               formatTime(log.timestamp)
               }}</span>
           </li>

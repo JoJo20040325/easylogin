@@ -1,17 +1,18 @@
+```vue
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-600 text-white">
+  <div class="min-h-screen bg-gradient-to-br from-blue-100 via-blue-300 to-white text-gray-800">
     <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
-      <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500"></div>
+      <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
     </div>
     <div v-else class="container mx-auto px-4 py-8">
       <!-- 顶部导航栏 -->
       <nav class="flex justify-between items-center mb-12">
-        <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+        <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-600">
           控制中心
         </h1>
         <div class="relative group">
           <img :src="`https://ui-avatars.com/api/?name=${authStore.userName}&background=random`" alt="用户头像"
-            class="w-12 h-12 rounded-full border-2 border-emerald-400 cursor-pointer transition-all duration-300 group-hover:scale-110 shadow-lg"
+            class="w-12 h-12 rounded-full border-2 border-blue-400 cursor-pointer transition-all duration-300 group-hover:scale-110 shadow-lg"
             @click="toggleUserMenu" />
           <div v-if="showUserMenu"
             class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 transition-all duration-300 ease-in-out transform origin-top-right">
@@ -35,20 +36,20 @@
       <!-- 日志区域 -->
       <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <LogSection title="令牌刷新日志" :logs="tokenRefreshLogs" @clear="clearTokenRefreshLogs"
-          class="bg-white bg-opacity-10 rounded-xl overflow-hidden transition-all duration-300 hover:bg-opacity-20 backdrop-blur-lg shadow-xl" />
+          class="bg-white bg-opacity-50 rounded-xl overflow-hidden transition-all duration-300 hover:bg-opacity-60 backdrop-blur-lg shadow-xl" />
         <LogSection title="API 调用日志" :logs="apiCallLogs" @clear="clearApiCallLogs"
-          class="bg-white bg-opacity-10 rounded-xl overflow-hidden transition-all duration-300 hover:bg-opacity-20 backdrop-blur-lg shadow-xl" />
+          class="bg-white bg-opacity-50 rounded-xl overflow-hidden transition-all duration-300 hover:bg-opacity-60 backdrop-blur-lg shadow-xl" />
       </div>
 
       <!-- 操作按钮 -->
       <div class="mt-12 flex justify-center space-x-6">
         <button @click="updateTokenTimes"
-          class="px-8 py-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-300 flex items-center transform hover:scale-105 shadow-lg">
+          class="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 flex items-center transform hover:scale-105 shadow-lg">
           <Icon name="refresh-cw" size="24" class="mr-3" />
           更新令牌时间
         </button>
         <button @click="simulateApiCall"
-          class="px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300 flex items-center transform hover:scale-105 shadow-lg">
+          class="px-8 py-4 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-all duration-300 flex items-center transform hover:scale-105 shadow-lg">
           <Icon name="zap" size="24" class="mr-3" />
           模拟 API 调用
         </button>
@@ -109,14 +110,30 @@ const toggleUserMenu = () => {
   showUserMenu.value = !showUserMenu.value;
 };
 
-// 生命周期钩子
-onMounted(async () => {
-  await authStore.initializeAuth();
-  if (authStore.isAuthenticated) {
-    await fetchTokenTimes();
-    authStore.startRefreshInterval();
+// 使用 requestIdleCallback 优化初始化过程
+const initializeDashboard = () => {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(async () => {
+      await authStore.initializeAuth();
+      if (authStore.isAuthenticated) {
+        await fetchTokenTimes();
+        authStore.startRefreshInterval();
+      }
+    });
+  } else {
+    // 降级方案
+    setTimeout(async () => {
+      await authStore.initializeAuth();
+      if (authStore.isAuthenticated) {
+        await fetchTokenTimes();
+        authStore.startRefreshInterval();
+      }
+    }, 0);
   }
-});
+};
+
+// 生命周期钩子
+onMounted(initializeDashboard);
 
 onUnmounted(() => {
   authStore.stopRefreshInterval();
@@ -141,13 +158,12 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 可以添加一些自定义样式 */
 .dashboard-card {
-  @apply bg-gradient-to-br from-purple-500 to-indigo-600;
+  @apply bg-gradient-to-br from-blue-400 to-cyan-500;
 }
 
 .log-section {
-  @apply bg-gradient-to-br from-gray-800 to-gray-900;
+  @apply bg-gradient-to-br from-blue-50 to-white;
 }
 
 /* 添加一些动画效果 */
@@ -160,3 +176,4 @@ onUnmounted(() => {
   animation: pulse 2s infinite;
 }
 </style>
+```

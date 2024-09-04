@@ -1,25 +1,37 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-200 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
-      <div class="bg-white shadow-2xl rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-3xl">
+      <div class="bg-white shadow-xl rounded-2xl overflow-hidden">
         <div class="md:flex">
-          <div class="md:flex-shrink-0 bg-gradient-to-br from-indigo-500 to-purple-600 p-8 text-white">
+          <!-- Left sidebar -->
+          <div class="md:w-1/3 bg-gradient-to-b from-blue-600 to-indigo-700 p-8 text-white">
             <div class="text-center">
               <div class="relative inline-block">
                 <img class="h-32 w-32 rounded-full mx-auto mb-4 border-4 border-white shadow-inner transition-all duration-300 hover:scale-105"
                   :src="`https://ui-avatars.com/api/?name=${user.username}&background=random`" :alt="user.username" />
-                <div class="absolute bottom-0 right-0 bg-green-500 rounded-full p-1">
+                <div class="absolute bottom-0 right-0 bg-green-400 rounded-full p-1">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                   </svg>
                 </div>
               </div>
               <h2 class="text-2xl font-semibold">{{ user.username }}</h2>
-              <p class="mt-2 text-indigo-200">用户详情</p>
+              <p class="mt-2 text-blue-200">用户详情</p>
             </div>
-            <div class="mt-8">
+            <nav class="mt-8 space-y-2">
+              <a href="#" class="block py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out">
+                <i class="fas fa-user mr-2"></i> 个人信息
+              </a>
+              <a href="#" class="block py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out">
+                <i class="fas fa-cog mr-2"></i> 设置
+              </a>
+              <a href="#" class="block py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out">
+                <i class="fas fa-bell mr-2"></i> 通知
+              </a>
+            </nav>
+            <div class="mt-auto pt-8">
               <button @click="logout"
-                class="w-full bg-white text-indigo-600 rounded-lg py-2 px-4 hover:bg-indigo-100 transition duration-300 flex items-center justify-center group">
+                class="w-full bg-white text-blue-600 rounded-lg py-2 px-4 hover:bg-blue-50 transition duration-300 flex items-center justify-center group">
                 <svg class="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -30,14 +42,16 @@
               </button>
             </div>
           </div>
-          <div class="p-8 md:p-12 w-full">
+          
+          <!-- Main content -->
+          <div class="md:w-2/3 p-8">
             <h3 class="text-2xl font-semibold text-gray-800 mb-6">个人信息</h3>
             <div class="space-y-6">
-              <div class="transition-all duration-300 hover:bg-gray-50 p-4 rounded-lg">
+              <div class="bg-gray-50 p-4 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md">
                 <label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
                 <div v-if="!editMode.username" class="flex items-center">
                   <span class="text-lg text-gray-900">{{ user.username }}</span>
-                  <button @click="toggleEditMode('username')" class="ml-4 text-indigo-600 hover:text-indigo-800 transition-colors duration-300">
+                  <button @click="toggleEditMode('username')" class="ml-4 text-blue-600 hover:text-blue-800 transition-colors duration-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                       xmlns="http://www.w3.org/2000/svg">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -48,22 +62,23 @@
                 </div>
                 <div v-else class="flex items-center">
                   <input v-model="editedUser.username"
-                    class="flex-grow shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" />
+                    class="flex-grow shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" />
                   <button @click="updateField('username')" :disabled="isLoading || !isFieldChanged('username')"
-                    class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
                     {{ isLoading ? '保存中...' : '保存' }}
                   </button>
                   <button @click="cancelEdit('username')"
-                    class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300">
+                    class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300">
                     取消
                   </button>
                 </div>
               </div>
-              <div class="transition-all duration-300 hover:bg-gray-50 p-4 rounded-lg">
+              
+              <div class="bg-gray-50 p-4 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md">
                 <label class="block text-sm font-medium text-gray-700 mb-2">邮箱</label>
                 <div v-if="!editMode.email" class="flex items-center">
                   <span class="text-lg text-gray-900">{{ user.email }}</span>
-                  <button @click="toggleEditMode('email')" class="ml-4 text-indigo-600 hover:text-indigo-800 transition-colors duration-300">
+                  <button @click="toggleEditMode('email')" class="ml-4 text-blue-600 hover:text-blue-800 transition-colors duration-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                       xmlns="http://www.w3.org/2000/svg">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -74,21 +89,22 @@
                 </div>
                 <div v-else class="flex items-center">
                   <input v-model="editedUser.email"
-                    class="flex-grow shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" />
+                    class="flex-grow shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" />
                   <button @click="updateField('email')" :disabled="isLoading || !isFieldChanged('email')"
-                    class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
                     {{ isLoading ? '保存中...' : '保存' }}
                   </button>
                   <button @click="cancelEdit('email')"
-                    class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300">
+                    class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300">
                     取消
                   </button>
                 </div>
               </div>
-              <div class="transition-all duration-300 hover:bg-gray-50 p-4 rounded-lg">
+              
+              <div class="bg-gray-50 p-4 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md">
                 <label class="block text-sm font-medium text-gray-700 mb-2">密码</label>
                 <button @click="showChangePasswordModal = true"
-                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-105">
+                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                   </svg>
@@ -96,6 +112,7 @@
                 </button>
               </div>
             </div>
+            
             <div class="mt-8 pt-6 border-t border-gray-200">
               <button @click="showDeleteAccountModal = true"
                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300 transform hover:scale-105">

@@ -5,6 +5,13 @@
 
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
+import { defineAsyncComponent } from 'vue'
+
+const Dashboard = defineAsyncComponent(() => import('@/views/Dashboard.vue'))
+Dashboard.__vite_preload = true  // 预加载 Dashboard 组件
+
+const UserProfile = defineAsyncComponent(() => import('@/components/user/UserProfile.vue'))
+UserProfile.__vite_preload = true  // 预加载 UserProfile 组件
 
 // 定义路由
 const routes = [

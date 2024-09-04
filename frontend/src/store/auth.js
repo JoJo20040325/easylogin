@@ -1,206 +1,210 @@
-/**
- * store/auth.js
- * 这个文件定义了认证相关的 Pinia store，管理用户认证状态和相关操作。
- */
-
+// store/auth.js
 import { defineStore } from "pinia";
+import { ref, computed, shallowRef } from 'vue';
 import api from "@/utils/api";
 import router from "@/router";
 
-export const useAuthStore = defineStore("auth", {
-  state: () => ({
-    user: null,
-    accessToken: null,
-    refreshToken: null,
-    lastRefresh:null,
-    refreshInterval: null,
-    accessTokenExpiryTime: null,
-    refreshTokenExpiryTime: null,
-  }),
+export const useAuthStore = defineStore("auth", () => {
+  // 状态
+  const user = shallowRef(null);
+  const accessToken = ref(null);
+  const refreshToken = ref(null);
+  const lastRefresh = ref(null);
+  const refreshInterval = ref(null);
+  const accessTokenExpiryTime = ref(null);
+  const refreshTokenExpiryTime = ref(null);
 
-  getters: {
-    isAuthenticated: (state) => !!state.accessToken,
-    isInitialized: (state) => state.user !== null && state.accessToken !== null,
-    userEmail: (state) => state.user?.email,
-    userName: (state) => state.user?.username,
-  },
+  // 计算属性
+  const isAuthenticated = computed(() => !!accessToken.value);
+  const isInitialized = computed(() => user.value !== null && accessToken.value !== null);
+  const userEmail = computed(() => user.value?.email);
+  const userName = computed(() => user.value?.username);
 
-  actions: {
-    // 初始化认证状态
-    async initializeAuth() {
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (refreshToken && !this.isAuthenticated) {
-        this.refreshToken = refreshToken;
-        try {
-          await this.fetchTokenTimes();
-          await this.refreshAccessToken();
-          await this.fetchUser();
-          this.startRefreshInterval();
-          return true;
-        } catch (error) {
-          console.error("认证初始化失败:", error);
-          this.logout();
-          return false;
-        }
-      }
-      return this.isAuthenticated;
-    },
-
-    // 用户登录
-    async login(username, password) {
+  // 方法
+  async function initializeAuth() {
+    const storedRefreshToken = localStorage.getItem("refreshToken");
+    if (storedRefreshToken && !isAuthenticated.value) {
+      refreshToken.value = storedRefreshToken;
       try {
-        const { data } = await api.post("/auth/login", { username, password });
-        this.setTokens(data.accessToken, data.refreshToken);
-        await this.fetchTokenTimes();
-        await this.fetchUser();
-        this.startRefreshInterval();
+        await fetchTokenTimes();
+        await refreshAccessToken();
+        await fetchUser();
+        startRefreshInterval();
+        return true;
       } catch (error) {
-        this.clearTokens();
-        throw error;
+        console.error("认证初始化失败:", error);
+        logout();
+        return false;
       }
-    },
+    }
+    return isAuthenticated.value;
+  }
 
-    // 用户注册
-    async register(username, email, password) {
-      await api.post("/auth/register", { username, email, password });
-    },
+  async function login(username, password) {
+    try {
+      const { data } = await api.post("/auth/login", { username, password });
+      setTokens(data.accessToken, data.refreshToken);
+      await fetchTokenTimes();
+      await fetchUser();
+      startRefreshInterval();
+    } catch (error) {
+      clearTokens();
+      throw error;
+    }
+  }
 
-    // 刷新访问令牌
-    async refreshAccessToken() {
-      try {
-        const { data } = await api.post("/auth/refresh", {
-          refreshToken: this.refreshToken,
-        });
-        this.accessToken = data.accessToken;
-        // 注意：不要更新 refreshToken
-        this.lastRefresh = new Date().toISOString();
-      } catch (error) {
-        this.logout();
-        throw error;
-      }
-    },
+  async function register(username, email, password) {
+    await api.post("/auth/register", { username, email, password });
+  }
 
-    // 获取用户信息
-    async fetchUser() {
-      const { data } = await api.get("/user/profile");
-      this.user = data;
-    },
-
-    // 获取令牌过期时间
-    async fetchTokenTimes() {
-      try {
-        const { data } = await api.get("/auth/token-times");
-        this.accessTokenExpiryTime = data.accessTokenExpiryTime;
-        this.refreshTokenExpiryTime = data.refreshTokenExpiryTime;
-      } catch (error) {
-        console.error("获取token过期时间失败:", error);
-      }
-    },
-
-    // 更新用户资料
-    async updateProfile(userData) {
-      const { data } = await api.put("/user/profile", userData);
-      if (data.user) {
-        this.user = { ...this.user, ...data.user };
-      }
-      return data;
-    },
-
-    // 更改密码
-    async changePassword(oldPassword, newPassword) {
-      await api.post("/user/change-password", { oldPassword, newPassword });
-    },
-
-    // 删除账户
-    async deleteAccount() {
-      await api.delete("/user/account");
-      this.logout();
-    },
-
-    // 忘记密码
-    async forgotPassword(email) {
-      await api.post("/auth/forgot-password", { email });
-    },
-
-    // 重置密码
-    async resetPassword(token, newPassword) {
-      await api.post("/auth/reset-password", { token, newPassword });
-    },
-
-    // 设置令牌
-    setTokens(accessToken, refreshToken) {
-      this.accessToken = accessToken;
-      this.refreshToken = refreshToken;
-      this.lastRefresh = new Date().toISOString();
-      localStorage.setItem("refreshToken", refreshToken);
-    },
-
-    // 更新令牌过期时间
-    async updateTokenTimes(accessTokenTime, refreshTokenTime) {
-      const { data } = await api.post("/auth/update-token-times", {
-        accessTokenTime,
-        refreshTokenTime,
+  async function refreshAccessToken() {
+    try {
+      const { data } = await api.post("/auth/refresh", {
+        refreshToken: refreshToken.value,
       });
-      this.setTokens(data.accessToken, data.refreshToken);
-      this.accessTokenExpiryTime = accessTokenTime;
-      this.refreshTokenExpiryTime = refreshTokenTime;
-      this.updateRefreshInterval();
-      return data;
-    },
+      accessToken.value = data.accessToken;
+      lastRefresh.value = new Date().toISOString();
+    } catch (error) {
+      logout();
+      throw error;
+    }
+  }
 
-    // 获取令牌过期时间
-    async getTokenTimes() {
+  async function fetchUser() {
+    const { data } = await api.get("/user/profile");
+    user.value = data;
+  }
+
+  async function fetchTokenTimes() {
+    try {
       const { data } = await api.get("/auth/token-times");
-      this.accessTokenExpiryTime = data.accessTokenExpiryTime;
-      this.refreshTokenExpiryTime = data.refreshTokenExpiryTime;
-      return data;
-    },
-    
-    // 清除令牌
-    clearTokens() {
-      this.accessToken = null;
-      this.refreshToken = null;
-      this.lastRefresh = null,
-      localStorage.removeItem("refreshToken");
-      this.stopRefreshInterval();
-    },
+      accessTokenExpiryTime.value = data.accessTokenExpiryTime;
+      refreshTokenExpiryTime.value = data.refreshTokenExpiryTime;
+    } catch (error) {
+      console.error("获取token过期时间失败:", error);
+    }
+  }
 
-    // 用户登出
-    logout() {
-      this.clearTokens();
-      this.user = null;
-      router.push({ name: "Login" });
-    },
+  async function updateProfile(userData) {
+    const { data } = await api.put("/user/profile", userData);
+    if (data.user) {
+      user.value = { ...user.value, ...data.user };
+    }
+    return data;
+  }
 
-    // 开始令牌刷新定时器
-    startRefreshInterval() {
-      this.stopRefreshInterval();
-      const refreshTime = this.parseTime(this.accessTokenExpiryTime);
-      this.refreshInterval = setInterval(
-        () => this.refreshAccessToken(),
-        refreshTime
-      );
-    },
+  async function changePassword(oldPassword, newPassword) {
+    await api.post("/user/change-password", { oldPassword, newPassword });
+  }
 
-    // 停止令牌刷新定时器
-    stopRefreshInterval() {
-      if (this.refreshInterval) {
-        clearInterval(this.refreshInterval);
-        this.refreshInterval = null;
-      }
-    },
+  async function deleteAccount() {
+    await api.delete("/user/account");
+    logout();
+  }
 
-    // 更新令牌刷新定时器
-    updateRefreshInterval() {
-      this.startRefreshInterval();
-    },
+  async function forgotPassword(email) {
+    await api.post("/auth/forgot-password", { email });
+  }
 
-    // 解析时间字符串
-    parseTime(timeString) {
-      const num = parseInt(timeString);
-      const unit = timeString.slice(-1).toLowerCase();
-      const multipliers = { s: 1000, m: 60000, h: 3600000, d: 86400000 };
-      return num * (multipliers[unit] || 1000);
-    },
-  },
+  async function resetPassword(token, newPassword) {
+    await api.post("/auth/reset-password", { token, newPassword });
+  }
+
+  function setTokens(newAccessToken, newRefreshToken) {
+    accessToken.value = newAccessToken;
+    refreshToken.value = newRefreshToken;
+    lastRefresh.value = new Date().toISOString();
+    localStorage.setItem("refreshToken", newRefreshToken);
+  }
+
+  async function updateTokenTimes(newAccessTokenTime, newRefreshTokenTime) {
+    const { data } = await api.post("/auth/update-token-times", {
+      accessTokenTime: newAccessTokenTime,
+      refreshTokenTime: newRefreshTokenTime,
+    });
+    setTokens(data.accessToken, data.refreshToken);
+    accessTokenExpiryTime.value = newAccessTokenTime;
+    refreshTokenExpiryTime.value = newRefreshTokenTime;
+    updateRefreshInterval();
+    return data;
+  }
+
+  async function getTokenTimes() {
+    const { data } = await api.get("/auth/token-times");
+    accessTokenExpiryTime.value = data.accessTokenExpiryTime;
+    refreshTokenExpiryTime.value = data.refreshTokenExpiryTime;
+    return data;
+  }
+
+  function clearTokens() {
+    accessToken.value = null;
+    refreshToken.value = null;
+    lastRefresh.value = null;
+    localStorage.removeItem("refreshToken");
+    stopRefreshInterval();
+  }
+
+  function logout() {
+    clearTokens();
+    user.value = null;
+    router.push({ name: "Login" });
+  }
+
+  function startRefreshInterval() {
+    stopRefreshInterval();
+    const refreshTime = parseTime(accessTokenExpiryTime.value);
+    refreshInterval.value = setInterval(() => refreshAccessToken(), refreshTime);
+  }
+
+  function stopRefreshInterval() {
+    if (refreshInterval.value) {
+      clearInterval(refreshInterval.value);
+      refreshInterval.value = null;
+    }
+  }
+
+  function updateRefreshInterval() {
+    startRefreshInterval();
+  }
+
+  function parseTime(timeString) {
+    const num = parseInt(timeString);
+    const unit = timeString.slice(-1).toLowerCase();
+    const multipliers = { s: 1000, m: 60000, h: 3600000, d: 86400000 };
+    return num * (multipliers[unit] || 1000);
+  }
+
+  return {
+    user,
+    accessToken,
+    refreshToken,
+    lastRefresh,
+    refreshInterval,
+    accessTokenExpiryTime,
+    refreshTokenExpiryTime,
+    isAuthenticated,
+    isInitialized,
+    userEmail,
+    userName,
+    initializeAuth,
+    login,
+    register,
+    refreshAccessToken,
+    fetchUser,
+    fetchTokenTimes,
+    updateProfile,
+    changePassword,
+    deleteAccount,
+    forgotPassword,
+    resetPassword,
+    setTokens,
+    updateTokenTimes,
+    getTokenTimes,
+    clearTokens,
+    logout,
+    startRefreshInterval,
+    stopRefreshInterval,
+    updateRefreshInterval,
+    parseTime
+  };
 });
